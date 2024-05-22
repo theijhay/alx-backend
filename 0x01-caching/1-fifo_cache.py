@@ -1,5 +1,5 @@
-#!/usr/bin/python3
-"""class FIFOCache that inherits from BaseCaching"""
+#!/usr/bin/env python3
+"""A class FIFOCache that inherits from BaseCachin"""
 
 from base_caching import BaseCaching
 
@@ -10,24 +10,25 @@ class FIFOCache(BaseCaching):
     def __init__(self):
         """Initialize"""
         super().__init__()
-        self.order = []
+        self.key_indexes = []
 
     def put(self, key, item):
-        """Add an item in the cache"""
-        if key is not None and item is not None:
-            if key not in self.cache_data and len(self.cache_data) >= BaseCaching.MAX_ITEMS:
-                first_key = self.order.pop(0)
-                del self.cache_data[first_key]
-                print(f"DISCARD: {first_key}")
+        """Assign the item value for the key in the cache"""
+        if key and item:
+            if key in self.cache_data:
+                self.cache_data[key] = item
+                return key
+
+            if len(self.cache_data) >= BaseCaching.MAX_ITEMS:
+                item_discarded = self.key_indexes.pop(0)
+                del self.cache_data[item_discarded]
+                print("DISCARD:", item_discarded)
 
             self.cache_data[key] = item
-            if key not in self.order:
-                self.order.append(key)
-            else:
-                # Move the existing key to the end to maintain order
-                self.order.remove(key)
-                self.order.append(key)
+            self.key_indexes.append(key)
 
     def get(self, key):
-        """Get an item by key"""
-        return self.cache_data.get(key, None)
+        """Return the value linked to the key in the cache"""
+        if key in self.cache_data:
+            return self.cache_data[key]
+        return None
