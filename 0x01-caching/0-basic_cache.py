@@ -5,6 +5,12 @@ from base_caching import BaseCaching
 
 
 class BasicCache(BaseCaching):
+    """class BasicCache that inherits from BaseCaching"""
+
+    def __init__(self):
+        """ Constructor method"""
+        BaseCaching.__init__(self)
+
     def put(self, key, item):
         """Add an item in the cache"""
         if key is not None and item is not None:
