@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="{{ get_locale() }}">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ home_title }}</title>
+</head>
+<body>
+    <h1>{{ home_header }}</h1>
+    {% if g.user %}
+        <p>{{ _('logged_in_as', username=g.user['name']) }}</p>
+    {% else %}
+        <p>{{ _('not_logged_in') }}</p>
+    {% endif %}
+    <p>{{ _('current_time_is', current_time=current_time) }}</p>
+</body>
+</html>
+
