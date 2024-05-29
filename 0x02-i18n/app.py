@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Flask application with Babel for i18n, timezone support, and mock user login"""
+"""Flask application with Babel for i18n, timezone
+support, and mock user login"""
 
 from flask import Flask, render_template, request, g
 from flask_babel import Babel, _, format_datetime
@@ -14,16 +15,19 @@ users = {
     4: {"name": "Teletubby", "locale": None, "timezone": "Europe/London"},
 }
 
+
 class Config:
     """Configuration class for Flask app"""
     LANGUAGES = ['en', 'fr']
     BABEL_DEFAULT_LOCALE = 'en'
     BABEL_DEFAULT_TIMEZONE = 'UTC'
 
+
 app = Flask(__name__)
 app.config.from_object(Config)
 
 babel = Babel(app)
+
 
 def get_user():
     """
@@ -36,12 +40,14 @@ def get_user():
         return users[int(user_id)]
     return None
 
+
 @app.before_request
 def before_request():
     """
     Execute before all requests to set the current user in the global context.
     """
     g.user = get_user()
+
 
 @babel.localeselector
 def get_locale():
@@ -59,13 +65,14 @@ def get_locale():
     locale = request.args.get('locale')
     if locale and locale in app.config['LANGUAGES']:
         return locale
-    
+
     # Locale from user settings
     if g.user and g.user['locale'] in app.config['LANGUAGES']:
         return g.user['locale']
-    
+
     # Locale from request headers
     return request.accept_languages.best_match(app.config['LANGUAGES'])
+
 
 @babel.timezoneselector
 def get_timezone():
@@ -86,7 +93,7 @@ def get_timezone():
             return timezone
         except UnknownTimeZoneError:
             pass
-    
+
     # Timezone from user settings
     if g.user and g.user['timezone']:
         try:
@@ -98,6 +105,7 @@ def get_timezone():
     # Default timezone
     return app.config['BABEL_DEFAULT_TIMEZONE']
 
+
 @app.route('/')
 def index():
     """
@@ -106,7 +114,14 @@ def index():
         str: Rendered HTML template.
     """
     current_time = format_datetime(datetime.now(pytz.timezone(get_timezone())))
-    return render_template('index.html', home_title=_("home_title"), home_header=_("home_header"), current_time=current_time)
+    return render_template('index.html',
+                           home_title=_("home_title"),
+                           home_header=_("home_header"),
+                           current_time=current_time)
+
+
+# Register get_locale as a template global
+app.jinja_env.globals.update(get_locale=get_locale)
 
 if __name__ == '__main__':
     app.run(debug=True)

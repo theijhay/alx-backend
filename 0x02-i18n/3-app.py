@@ -1,36 +1,51 @@
 #!/usr/bin/env python3
-"""
-Basic Flask app with Babel support and parametrized templates
-"""
-from flask import Flask, render_template, request
-from flask_babel import Babel
+"""Flask application with Babel for i18n"""
 
-class Config(object):
-    """
-    Configuration class for Babel
-    """
+from flask import Flask, render_template, request, g
+from flask_babel import Babel, _
+
+app = Flask(__name__)
+
+
+class Config:
+    """Config class for Flask app"""
     LANGUAGES = ["en", "fr"]
     BABEL_DEFAULT_LOCALE = "en"
     BABEL_DEFAULT_TIMEZONE = "UTC"
 
-app = Flask(__name__)
+
 app.config.from_object(Config)
+
+
 babel = Babel(app)
 
-@babel.locale_selector
+
+@babel.localeselector
 def get_locale():
-    """
-    Determine the best match for the app's supported languages
-    based on the request's Accept-Language header.
-    """
+    """Determine the best match for supported languages."""
+    # Locale from URL parameters
+    locale = request.args.get('locale')
+    if locale in app.config['LANGUAGES']:
+        return locale
+
+    # Locale from user settings
+    user = g.get('user', None)
+    if user and user.get('locale') in app.config['LANGUAGES']:
+        return user['locale']
+
+    # Locale from request headers
     return request.accept_languages.best_match(app.config['LANGUAGES'])
 
-@app.route('/', strict_slashes=False)
-def index():
-    """
-    Render the index template
-    """
-    return render_template('3-index.html')
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+@app.route('/')
+def home():
+
+    """Render the home page"""
+    return render_template("3-index.html")
+
+
+# Register `get_locale` as a template global
+app.jinja_env.globals.update(get_locale=get_locale)
+
+if __name__ == "__main__":
+    app.run(debug=True)

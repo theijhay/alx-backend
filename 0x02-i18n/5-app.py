@@ -11,16 +11,20 @@ users = {
     4: {"name": "Teletubby", "locale": None, "timezone": "Europe/London"},
 }
 
+
 class Config:
     """Configuration class for Flask app"""
     LANGUAGES = ['en', 'fr']
     BABEL_DEFAULT_LOCALE = 'en'
     BABEL_DEFAULT_TIMEZONE = 'UTC'
 
+
 app = Flask(__name__)
 app.config.from_object(Config)
 
+
 babel = Babel(app)
+
 
 def get_user():
     """
@@ -33,6 +37,7 @@ def get_user():
         return users[int(user_id)]
     return None
 
+
 @app.before_request
 def before_request():
     """
@@ -40,21 +45,25 @@ def before_request():
     """
     g.user = get_user()
 
+
 @babel.localeselector
 def get_locale():
     """
     Determine the best match for supported languages.
-    If 'locale' parameter is present in the request and its value is a supported locale,
+    If 'locale' parameter is present in the request and
+    its value is a supported locale,
     return it. Otherwise, use the default locale.
     Returns:
         str: Best match locale string.
     """
+
     locale = request.args.get('locale')
     if locale in app.config['LANGUAGES']:
         return locale
     if g.user and g.user['locale'] in app.config['LANGUAGES']:
         return g.user['locale']
     return request.accept_languages.best_match(app.config['LANGUAGES'])
+
 
 @app.route('/')
 def index():
@@ -63,7 +72,13 @@ def index():
     Returns:
         str: Rendered HTML template.
     """
-    return render_template('5-index.html', home_title=_("home_title"), home_header=_("home_header"))
+    return render_template('5-index.html',
+                           home_title=_("home_title"),
+                           home_header=_("home_header"))
+
+
+# Register get_locale as a template global
+app.jinja_env.globals.update(get_locale=get_locale)
 
 if __name__ == '__main__':
     app.run(debug=True)
